@@ -47,6 +47,10 @@ void CPM::bedchange(lexer *p, fdm *a, ghostcell *pgc, sediment_fdm *s, int mode)
 
 void CPM::bedchange_update(lexer *p, ghostcell *pgc, int mode)
 {
+
+    SLICELOOP4
+    bedch(i,j) = 0.0;
+
     for(n=0;n<P.index;++n)
     if(P.Flag[n]>=ACTIVE)
     {

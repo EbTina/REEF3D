@@ -33,6 +33,9 @@ double CPM::drag_model(lexer *p, double d50, double rhoS, double vel, double Ts)
 
     vel = fabs(vel);
 
+    if(vel < 1.0e-12)
+    return 0.0;
+
     double Rep = vel*d50/p->W2;
 
     double Cd = (24.0/Rep)*(pow(Tf,-2.65) + (1.0/6.0)*pow(Rep,2.0/3.0)*pow(Tf,-1.78));

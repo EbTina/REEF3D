@@ -77,6 +77,10 @@ public:
 
     double *Test;
 
+
+    double *Mobile;
+
+
     int *Empty,*Flag;
 
     double d50,rhosed;

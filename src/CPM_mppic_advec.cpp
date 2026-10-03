@@ -47,9 +47,16 @@ void CPM::advec_mppic_step1(lexer *p, fdm *a, part &P, sediment_fdm *s, turbulen
     wf = p->ccipol3c(a->w,PX[n],PY[n],PZ[n]);
 
     // relative velocity
-    Urel = uf;//-PU[n];
-    Vrel = vf;//-PV[n];
-    Wrel = wf;//-PW[n];
+    // Urel = uf;//-PU[n];
+    // Vrel = vf;//-PV[n];
+    // Wrel = wf;//-PW[n];
+
+    Urel = uf-PU[n];
+    Vrel = vf-PV[n];
+    Wrel = wf-PW[n];
+
+
+
 
     P.Uf[n] = uf;
     P.Vf[n] = vf;
@@ -63,14 +70,29 @@ void CPM::advec_mppic_step1(lexer *p, fdm *a, part &P, sediment_fdm *s, turbulen
     P.Test[n] = dPz_val;
     
     // drag coefficient
-    Dpx = drag_model(p,P.D[n],P.RO[n],Urel,Tsval);
-    Dpy = drag_model(p,P.D[n],P.RO[n],Vrel,Tsval);
-    Dpz = drag_model(p,P.D[n],P.RO[n],Wrel,Tsval);
+   // Dpx = drag_model(p,P.D[n],P.RO[n],Urel,Tsval);
+   // Dpy = drag_model(p,P.D[n],P.RO[n],Vrel,Tsval);
+   // Dpz = drag_model(p,P.D[n],P.RO[n],Wrel,Tsval);
+
+
+	double Urel_mag = sqrt(Urel*Urel + Vrel*Vrel + Wrel*Wrel);
+
+	double Dp = drag_model(p,P.D[n],P.RO[n],Urel_mag,Tsval);
+
+	Dpx = Dp;
+	Dpy = Dp;
+	Dpz = Dp;
+
+
 
     // particle force
-    F = Dpx*Urel - dPx_val/P.RO[n] + Bx;
-    G = Dpy*Vrel - dPy_val/P.RO[n] + By;
-    H = Dpz*Wrel - dPz_val/P.RO[n] + Bz;
+    // F = Dpx*Urel - dPx_val/P.RO[n] + Bx;
+    // G = Dpy*Vrel - dPy_val/P.RO[n] + By;
+    // H = Dpz*Wrel - dPz_val/P.RO[n] + Bz;
+
+    F = Dpx*uf - dPx_val/P.RO[n] + Bx;
+    G = Dpy*vf - dPy_val/P.RO[n] + By;
+    H = Dpz*wf - dPz_val/P.RO[n] + Bz;
     
     
     // inter-particle stress
@@ -83,9 +105,9 @@ void CPM::advec_mppic_step1(lexer *p, fdm *a, part &P, sediment_fdm *s, turbulen
     //F=G=H=0.0;
 
     // inter-partile stress
-    F -= dTx_val/(P.RO[n]*(Tsval>1.0e-6?Tsval:1.0e10));
-    G -= dTy_val/(P.RO[n]*(Tsval>1.0e-6?Tsval:1.0e10));
-    H -= dTz_val/(P.RO[n]*(Tsval>1.0e-6?Tsval:1.0e10));
+    // F -= dTx_val/(P.RO[n]*(Tsval>1.0e-6?Tsval:1.0e10));
+    // G -= dTy_val/(P.RO[n]*(Tsval>1.0e-6?Tsval:1.0e10));
+    // H -= dTz_val/(P.RO[n]*(Tsval>1.0e-6?Tsval:1.0e10));
     
 
     // solid forcing

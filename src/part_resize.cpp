@@ -52,20 +52,26 @@ void part::resize(lexer *p, int capacity_new)
         p->Dresize(D,capacity,capacity_new);
         p->Dresize(RO,capacity,capacity_new);
 
+
         p->Dresize(Test,capacity,capacity_new);
+        p->Dresize(Mobile,capacity,capacity_new);
 
         p->Iresize(Flag,capacity,capacity_new);
+
+
+
         p->Iresize(Empty,capacity,capacity_new);
 
         // Flag update
         // add new cells to Empty list
         for(n=capacity;n<capacity_new;++n)
-        {
-            Flag[n] = EMPTY;
+{
+    Flag[n] = EMPTY;
+    Mobile[n] = 0.0;
 
-            Empty[index_empty] = n;
-            ++index_empty;
-        }
+    Empty[index_empty] = n;
+    ++index_empty;
+}
         index=capacity=capacity_new;
     }
 }

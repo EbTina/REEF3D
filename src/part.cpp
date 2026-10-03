@@ -66,6 +66,10 @@ part::part(lexer *p, ghostcell *pgc)
 
     p->Darray(Test,capacity);
 
+
+    p->Darray(Mobile,capacity);
+
+
     p->Iarray(Flag,capacity);
     p->Iarray(Empty,capacity);
 
@@ -122,6 +126,9 @@ part::~part()
 
     delete[] Test;
     Test=nullptr;
+
+    delete[] Mobile;
+    Mobile=nullptr;
 
     delete[] Empty;
     Empty=nullptr;

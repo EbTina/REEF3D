@@ -47,19 +47,150 @@ void CPM::mppic_EE1(lexer *p, fdm *a, ghostcell *pgc, sediment_fdm *s, turbulenc
     if(P.Flag[n]==ACTIVE)
     {
 
-        advec_mppic_step1(p, a, P, s, pturb,
-                    P.X, P.Y, P.Z, P.U, P.V, P.W,
-                    F, G, H, 0.5);
+
+    // Save old position for bed-change calculation
+         P.XRK1[n] = P.X[n];
+         P.YRK1[n] = P.Y[n];
+         P.ZRK1[n] = P.Z[n];
+
+        // advec_mppic_step1(p, a, P, s, pturb,
+        //            P.X, P.Y, P.Z, P.U, P.V, P.W,
+         //           F, G, H, 0.5);
 
         // Velocity update 1
-        P.U[n] = (P.U[n] + p->dtsed*F)/(1.0 + p->dtsed*Dpx);
-        P.V[n] = (P.V[n] + p->dtsed*G)/(1.0 + p->dtsed*Dpy);
-        P.W[n] = (P.W[n] + p->dtsed*H)/(1.0 + p->dtsed*Dpz);
+        // P.U[n] = (P.U[n] + p->dtsed*F)/(1.0 + p->dtsed*Dpx);
+        // P.V[n] = (P.V[n] + p->dtsed*G)/(1.0 + p->dtsed*Dpy);
+        // P.W[n] = (P.W[n] + p->dtsed*H)/(1.0 + p->dtsed*Dpz);
         
         // Position update
-        P.X[n] = P.X[n] + p->dtsed*P.U[n];
-        P.Y[n] = P.Y[n] + p->dtsed*P.V[n];
-        P.Z[n] = P.Z[n] + p->dtsed*P.W[n];
+        // P.X[n] = P.X[n] + p->dtsed*P.U[n];
+        // P.Y[n] = P.Y[n] + p->dtsed*P.V[n];
+        // P.Z[n] = P.Z[n] + p->dtsed*P.W[n];
+
+
+//------AddedByTina
+
+
+advec_mppic_step1(p, a, P, s, pturb,
+            P.X, P.Y, P.Z, P.U, P.V, P.W,
+            F, G, H, 0.5);
+
+
+// -------------------------------------------------------------
+// Initiation of particle motion - Coulomb criterion
+// Option A: criterion is applied only before first mobilization
+// -------------------------------------------------------------
+
+if(P.Mobile[n] < 0.5)
+{
+    // ---------------------------------------------------------
+    // Hydrodynamic quantities for initiation of motion
+    // sampled 0.01 m above the resting particle
+    // ---------------------------------------------------------
+    double z_ini = P.Z[n] + 0.01;
+
+    // Fluid velocity at initiation sampling point
+    double uf_ini =
+        p->ccipol1c(a->u, P.X[n], P.Y[n], z_ini);
+
+    double vf_ini =
+        p->ccipol2c(a->v, P.X[n], P.Y[n], z_ini);
+
+    double wf_ini =
+        p->ccipol3c(a->w, P.X[n], P.Y[n], z_ini);
+
+    // True particle-fluid relative velocity
+    double Urel_ini = uf_ini - P.U[n];
+    double Vrel_ini = vf_ini - P.V[n];
+    double Wrel_ini = wf_ini - P.W[n];
+
+    // Total 3-D slip magnitude for the drag coefficient
+    double Urel_mag_ini =
+        sqrt(Urel_ini*Urel_ini
+           + Vrel_ini*Vrel_ini
+           + Wrel_ini*Wrel_ini);
+
+    // Solid volume fraction at initiation sampling point
+    double Ts_ini =
+        p->ccipol4a(Ts, P.X[n], P.Y[n], z_ini);
+
+    // Drag coefficient/rate evaluated at initiation point
+    double Dp_ini =
+        drag_model(p, P.D[n], P.RO[n],
+                   Urel_mag_ini, Ts_ini);
+
+    // Horizontal drag acceleration
+    double a_drag_x = Dp_ini * Urel_ini;
+    double a_drag_y = Dp_ini * Vrel_ini;
+
+    // Pressure gradients at initiation sampling point
+    double dPx_ini =
+        p->ccipol4a(dPx, P.X[n], P.Y[n], z_ini);
+
+    double dPy_ini =
+        p->ccipol4a(dPy, P.X[n], P.Y[n], z_ini);
+
+    // Horizontal pressure-gradient acceleration
+    double a_press_x = -dPx_ini / P.RO[n];
+    double a_press_y = -dPy_ini / P.RO[n];
+
+    // Total horizontal hydrodynamic driving acceleration
+    double a_drive_x = a_drag_x + a_press_x;
+    double a_drive_y = a_drag_y + a_press_y;
+
+    double a_drive =
+        sqrt(a_drive_x*a_drive_x
+           + a_drive_y*a_drive_y);
+
+    // Coulomb resistance based on submerged particle weight
+    double a_res =
+        p->Q30
+        * (P.RO[n] - p->W1)/P.RO[n]
+        * fabs(p->W22);
+
+    // Initiation of motion
+    if(a_drive > a_res)
+        P.Mobile[n] = 1.0;
+}
+
+
+// -------------------------------------------------------------
+// Particle motion
+// -------------------------------------------------------------
+if(P.Mobile[n] < 0.5)
+{
+    // Particle has not reached the initiation criterion
+    P.U[n] = 0.0;
+    P.V[n] = 0.0;
+    P.W[n] = 0.0;
+
+    // X, Y, Z remain unchanged
+}
+else
+{
+    // Normal MP-PIC velocity update
+    P.U[n] =
+        (P.U[n] + p->dtsed*F)
+        /(1.0 + p->dtsed*Dpx);
+
+    P.V[n] =
+        (P.V[n] + p->dtsed*G)
+        /(1.0 + p->dtsed*Dpy);
+
+    P.W[n] =
+        (P.W[n] + p->dtsed*H)
+        /(1.0 + p->dtsed*Dpz);
+
+    // Position update
+    P.X[n] = P.X[n] + p->dtsed*P.U[n];
+    P.Y[n] = P.Y[n] + p->dtsed*P.V[n];
+    P.Z[n] = P.Z[n] + p->dtsed*P.W[n];
+}
+
+
+
+
+
     }
     /*
     for(n=0;n<P.index;++n)
@@ -84,8 +215,8 @@ void CPM::mppic_EE1(lexer *p, fdm *a, ghostcell *pgc, sediment_fdm *s, turbulenc
     }*/
 
     boundcheck(p,2);
-    //bedchange_update(p,pgc,2);
-    //bedchange(p,a,pgc,s,2);
+    bedchange_update(p,pgc,2);
+    bedchange(p,a,pgc,s,2);
 
     // parallel transfer
     P.xchange(p, pgc,bedch,2);

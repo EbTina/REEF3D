@@ -39,8 +39,11 @@ void CPM::timestep(lexer *p, ghostcell *pgc)
         }
     }
 
+    // maxvz = MAX(maxVelU,maxVelV);
+    // maxvz = MAX(maxvz,maxVelV);
+
     maxvz = MAX(maxVelU,maxVelV);
-    maxvz = MAX(maxvz,maxVelV);
+    maxvz = MAX(maxvz,maxVelW);
 
     maxvz = pgc->globalmax(maxvz);
 

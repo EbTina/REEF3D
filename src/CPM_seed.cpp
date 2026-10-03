@@ -70,11 +70,17 @@ void CPM::seed_particles(lexer *p, fdm *a, ghostcell *pgc, sediment_fdm *s)
                 P.Y[n] = p->YN[JP] + double(jj) * spacing ;
                 P.Z[n] = p->ZN[KP] + double(kk) * spacing ;
 
-                P.D[n] = p->S20;
-                P.RO[n] = p->S22;
+	P.D[n] = p->S20;
+	P.RO[n] = p->S22;
 
-                P.Flag[n] = ACTIVE;
-                --P.index_empty;
+	P.U[n] = 0.0;
+	P.V[n] = 0.0;
+	P.W[n] = 0.0;
+
+	P.Mobile[n] = 0.0;
+
+	P.Flag[n] = ACTIVE;
+
             }
         }
     }
@@ -102,10 +108,16 @@ void CPM::seed_particles(lexer *p, fdm *a, ghostcell *pgc, sediment_fdm *s)
                 P.Y[n] = p->YN[JP] + double(jj) * spacing + 0.1*p->DYN[JP]*double(rand() % irand)/drand;
                 P.Z[n] = p->ZN[KP] + double(kk) * spacing + 0.1*p->DZN[KP]*double(rand() % irand)/drand;
 
-                P.D[n] = p->S20;
-                P.RO[n] = p->S22;
+	P.D[n] = p->S20;
+	P.RO[n] = p->S22;
 
-                P.Flag[n] = ACTIVE;
+	P.U[n] = 0.0;
+	P.V[n] = 0.0;
+	P.W[n] = 0.0;
+
+	P.Mobile[n] = 0.0;
+
+	P.Flag[n] = ACTIVE;
                 --P.index_empty;
             }
         }
@@ -125,10 +137,16 @@ void CPM::seed_particles(lexer *p, fdm *a, ghostcell *pgc, sediment_fdm *s)
                 P.Y[n] = p->YN[JP] + p->DYN[JP]*double(rand() % irand)/drand;
                 P.Z[n] = p->ZN[KP] + p->DZN[KP]*double(rand() % irand)/drand;
 
-                P.D[n] = p->S20;
-                P.RO[n] = p->S22;
+	P.D[n] = p->S20;
+	P.RO[n] = p->S22;
 
-                P.Flag[n] = ACTIVE;
+	P.U[n] = 0.0;
+	P.V[n] = 0.0;
+	P.W[n] = 0.0;
+
+	P.Mobile[n] = 0.0;
+
+	P.Flag[n] = ACTIVE;
                 --P.index_empty;
             }
         }
